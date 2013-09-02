@@ -5,6 +5,9 @@ ranks = '23456789TJQKA'
 def ridx(r):
   return ranks.index(r)
 
+def idxr(idx):
+  return ranks[idx]
+
 class Hand(object):
   cards = []
 

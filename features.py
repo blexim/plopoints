@@ -20,7 +20,7 @@ def suited(h):
       rank = r
 
     if cnt == 2:
-      ret.append('suited%d' % rank)
+      ret.append('suited_%s' % hand.idxr(rank))
     elif cnt == 3:
       flush3 = True
     elif cnt == 4:
@@ -47,7 +47,7 @@ def pairs(h):
 
   for (r, cnt) in ranks.items():
     if cnt > 1:
-      ret.append('pair%d' % r)
+      ret.append('pair_%s' % hand.idxr(r))
       numpairs += 1
 
     if cnt == 3:
@@ -94,8 +94,7 @@ def connected(h):
   (cnt, hi, gaps) = bestrundown
 
   if cnt >= 2:
-    ret.append('rundown_%dcards_%dhi' % (cnt, hi))
-    #ret.append('rundown_%dhi' % hi)
+    ret.append('rundown_%dcards_%shi' % (cnt, hand.idxr(hi)))
 
     if gaps > 0:
       ret.append('rundown_%dgaps' % gaps)
@@ -108,7 +107,7 @@ def rankstrength(h):
   ranks = set(r for (r, _) in h.cards)
 
   for r in ranks:
-    ret.append('rank%d' % r)
+    ret.append('rank_%s' % hand.idxr(r))
 
   return ret
 

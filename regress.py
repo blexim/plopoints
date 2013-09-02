@@ -66,14 +66,14 @@ def print_solution(soln, revnames):
     coeff = soln[i]
 
     if True or maxcoeff / abs(coeff) <= 10000000:
-      coeffs.append((coeff, name))
+      coeffs.append((name, coeff))
 
       if abs(coeff) < mincoeff:
         mincoeff = abs(coeff)
 
   coeffs.sort()
 
-  for (c, n) in coeffs:
+  for (n, c) in coeffs:
     x = int(c / mincoeff)
     print "%s: %d" % (n, x)
 
