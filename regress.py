@@ -2,21 +2,20 @@
 
 import hand, features
 import numpy as np
+import random
 
 def read_hands(ranking_file):
   handrankings = open(ranking_file)
-  allfeatures = []
+  hands = []
 
   for l in handrankings:
     l = l.strip()
     h = hand.Hand(l)
-    feats = features.features(h)
-
-    allfeatures.append(feats)
+    hands.append(h)
 
   handrankings.close()
 
-  return allfeatures
+  return hands
 
 def feature_names(featurelist):
   names = {}
@@ -31,7 +30,9 @@ def feature_names(featurelist):
 
   return (names, revnames)
 
-def vectorize(featurelist):
+def vectorize(hands):
+  featurelist = [features.features(h) for h in hands]
+
   (names, revnames) = feature_names(featurelist)
   ret = []
 
@@ -63,7 +64,7 @@ def normalize(soln, revnames):
   for i in xrange(len(soln)):
     name = revnames[i]
     x = soln[i]
-    ret[name] = int(x / mincoeff) - 1
+    ret[name] = int(x / mincoeff)
 
   return ret
 
@@ -80,6 +81,32 @@ def print_rules(rules):
   for (name, coeff) in sorted(rules.items()):
     if coeff != 0:
       print "%s: %d" % (name, coeff)
+
+def check(rules, hands):
+  correct = 0
+  incorrect = 0
+  total = 0
+
+  for i in xrange(100000):
+    idx1 = random.randint(0, len(hands) - 1)
+    idx2 = random.randint(0, len(hands) - 1)
+
+    h1 = hands[idx1]
+    h2 = hands[idx2]
+
+    score1 = eval(rules, h1)
+    score2 = eval(rules, h2)
+
+    if h1 <= h2 and score1 >= score2:
+      correct += 1
+    else:
+      incorrect += 1
+
+    total += 1.0
+
+  frac = correct / total
+
+  return (correct, total, frac*100)
 
 if __name__ == '__main__':
   import sys
@@ -100,6 +127,12 @@ if __name__ == '__main__':
 
   rules = normalize(solution, revnames)
   print_rules(rules)
+
+  print "Checking..."
+  (correct, total, perc) = check(rules, rankings)
+
+
+  print "%d/%d correct (%.02f%%)" % (correct, total, perc)
 
   if len(sys.argv) > 2:
     h = hand.Hand(sys.argv[2])

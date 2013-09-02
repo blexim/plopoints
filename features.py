@@ -113,4 +113,4 @@ def rankstrength(h):
 
 
 def features(h):
-  return suited(h) + pairs(h) + rankstrength(h) + connected(h)
+  return suited(h) + pairs(h) + connected(h) + rankstrength(h)
