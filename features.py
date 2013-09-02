@@ -69,10 +69,10 @@ def connected(h):
   if hand.ridx('A') in ranks:
     ranks.append(-1)
 
-  bestrundown = (-1, -1, -1)
+  bestrundown = (-1, -1, -1, -1)
 
   for i in xrange(len(ranks)):
-    gaps = 0
+    gaps = []
     lastrank = ranks[i]
     cnt = 1
     hi = ranks[i]
@@ -80,10 +80,10 @@ def connected(h):
     for r in ranks[i+1:]:
       gap = lastrank - r - 1
 
-      if gap + gaps > 3:
+      if gap + len(gaps) > 3:
         break
 
-      gaps += gap
+      gaps += range(cnt, cnt + gap)
       cnt += 1
 
     rundown = (cnt, hi, gaps)
@@ -96,8 +96,8 @@ def connected(h):
   if cnt >= 2:
     ret.append('rundown_%dcards_%shi' % (cnt, hand.idxr(hi)))
 
-    if gaps > 0:
-      ret.append('rundown_%dgaps' % gaps)
+    for g in gaps:
+      ret.append('rundown_gap_%d' % g)
 
   return ret
 
