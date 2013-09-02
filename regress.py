@@ -8,15 +8,24 @@ import pylab
 def read_hands(ranking_file):
   handrankings = open(ranking_file)
   hands = []
+  vals = []
 
   for l in handrankings:
     l = l.strip()
-    h = hand.Hand(l)
+    toks = l.split('\t')
+    h = hand.Hand(toks[0])
+
+    if len(toks) > 1:
+      vals.append(int(toks[1]))
+
     hands.append(h)
+  
+  if not vals:
+    vals = reversed(range(len(hands), 0, -1))
 
   handrankings.close()
 
-  return hands
+  return (hands, vals)
 
 def feature_names(featurelist):
   names = {}
@@ -48,9 +57,9 @@ def vectorize(hands):
 
   return (ret, names, revnames)
 
-def create_matrix(vectors):
+def create_matrix(vectors, vals):
   A = np.vstack(vectors)
-  y = np.array(range(len(vectors), 0, -1))
+  y = np.array(vals)
 
   return (A, y)
 
@@ -82,9 +91,9 @@ def print_rules(rules):
     if coeff != 0:
       print "%s: %d" % (name, coeff)
 
-def plot_rules(rules, hands):
-  xs = range(len(hands))
-  ys = [eval(rules, h) for h in reversed(hands)]
+def plot_rules(rules, hands, vals):
+  xs = vals
+  ys = [eval(rules, h) for h in hands]
 
   pylab.xlabel("Hand strength")
   pylab.ylabel("Score")
@@ -92,23 +101,28 @@ def plot_rules(rules, hands):
   pylab.plot(xs, ys, 'x')
   pylab.show()
 
-def check(rules, hands, numtrials=100000):
+def check(rules, hands, vals, numtrials=100000):
   correct = 0
   incorrect = 0
   total = 0
 
   for i in xrange(numtrials):
     idxes = random.sample(xrange(len(hands)), 2)
-    idx1 = min(idxes)
-    idx2 = max(idxes)
 
-    h1 = hands[idx1]
-    h2 = hands[idx2]
+    idx1 = idxes[0]
+    idx2 = idxes[1]
+
+    if vals[idx1] <= vals[idx2]:
+      h1 = hands[idx1]
+      h2 = hands[idx2]
+    else:
+      h1 = hands[idx2]
+      h2 = hands[idx1]
 
     score1 = eval(rules, h1)
     score2 = eval(rules, h2)
 
-    if score1 >= score2:
+    if score1 <= score2:
       correct += 1
     else:
       incorrect += 1
@@ -119,7 +133,7 @@ def check(rules, hands, numtrials=100000):
 
   return (correct, total, frac*100)
 
-def anneal(hands, maxcoeff=50, iterations=10000):
+def anneal(hands, vals, maxcoeff=50, iterations=10000):
   (_, names, revnames) = vectorize(hands)
   rules = {}
   temp = maxcoeff*2
@@ -146,7 +160,7 @@ def anneal(hands, maxcoeff=50, iterations=10000):
 
       newrules[n] = coeff
 
-    score = check(newrules, hands, checktrials)[0]
+    score = check(newrules, hands, vals, checktrials)[0]
 
     if score > bestscore:
       print "New best: %d" % score
@@ -164,21 +178,21 @@ if __name__ == '__main__':
   import sys
 
   print "Reading hand rankings..."
-  rankings = read_hands(sys.argv[1])
+  (hands, vals) = read_hands(sys.argv[1])
 
-  doanneal = True
+  doanneal = False
 
   if doanneal:
     print "Annealing..."
-    rules = anneal(rankings)
+    rules = anneal(hands, vals)
   else:
     print "Vectorizing features..."
-    (vects, names, revnames) = vectorize(rankings)
+    (vects, names, revnames) = vectorize(hands)
 
     print "Created %d vectors over %d features" % (len(vects), len(names))
 
     print "Creating matrix..."
-    (A, y) = create_matrix(vects)
+    (A, y) = create_matrix(vects, vals)
 
     print "Solving..."
     solution = solve(A, y)[0]
@@ -187,10 +201,10 @@ if __name__ == '__main__':
 
   print_rules(rules)
 
-  plot_rules(rules, rankings)
+  plot_rules(rules, hands, vals)
 
   print "Checking..."
-  (correct, total, perc) = check(rules, rankings)
+  (correct, total, perc) = check(rules, hands, vals)
 
   print "%d/%d correct (%.02f%%)" % (correct, total, perc)
 

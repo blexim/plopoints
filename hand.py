@@ -25,7 +25,7 @@ class Hand(object):
       elif c == ')':
         suited = False
         suit += 1
-      elif c in hand.ranks:
+      elif c in ranks:
         rank = ridx(c)
         card = (rank, suit)
         ret.append(card)
