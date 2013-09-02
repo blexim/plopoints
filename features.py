@@ -69,40 +69,36 @@ def connected(h):
   if hand.ridx('A') in ranks:
     ranks.append(-1)
 
-  hi = ranks[0]
-  lastrank = ranks[0]
-  gaps = 0
-  cnt = 1
+  bestrundown = (-1, -1, -1)
 
-  for r in ranks[1:]:
-    gap = lastrank - r - 1
+  for i in xrange(len(ranks)):
+    gaps = 0
+    lastrank = ranks[i]
+    cnt = 1
+    hi = ranks[i]
 
-    if gap <= 3:
+    for r in ranks[i+1:]:
+      gap = lastrank - r - 1
+
+      if gap + gaps > 3:
+        break
+
       gaps += gap
       cnt += 1
-    else:
-      if cnt > 1:
-        # This is the end of the rundown
-        lo = lastrank
 
-        ret.append('rundown_%dcards' % cnt)
-        ret.append('rundown_%dhi' % hi)
-        ret.append('rundown_%dlo' % lo)
-        ret.append('rundown_%dgaps' % gaps)
+    rundown = (cnt, hi, gaps)
 
-      cnt = 1
-      gaps = 0
+    if rundown > bestrundown:
+      bestrundown = rundown
 
-    lastrank = r
+  (cnt, hi, gaps) = bestrundown
 
-  if cnt > 1:
-    # Mop up the last rundown
-    lo = lastrank
+  if cnt >= 2:
+    ret.append('rundown_%dcards_%dhi' % (cnt, hi))
+    #ret.append('rundown_%dhi' % hi)
 
-    ret.append('rundown_%dcards' % cnt)
-    ret.append('rundown_%dhi' % hi)
-    ret.append('rundown_%dlo' % lo)
-    ret.append('rundown_%dgaps' % gaps)
+    if gaps > 0:
+      ret.append('rundown_%dgaps' % gaps)
 
   return ret
 
@@ -118,4 +114,4 @@ def rankstrength(h):
 
 
 def features(h):
-  return suited(h) + pairs(h) + connected(h) + rankstrength(h)
+  return suited(h) + pairs(h) + rankstrength(h) + connected(h)
