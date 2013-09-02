@@ -41,11 +41,11 @@ def read_hands(ranking_file):
       vals.append(int(toks[1]))
 
     hands.append(h)
-  
-  if not vals:
-    vals = reversed(range(len(hands), 0, -1))
 
   handrankings.close()
+  
+  if not vals:
+    vals = range(len(hands), 0, -1)
 
   return (hands, vals)
 
