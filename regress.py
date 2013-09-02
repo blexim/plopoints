@@ -4,6 +4,28 @@ import hand, features
 import numpy as np
 import random
 import pylab
+import argparse
+
+argparser = argparse.ArgumentParser(description='Compute PLO rule sets')
+argparser.add_argument('--anneal', action='store_const',
+    const=True, default=False,
+    help='Use simulated annealing')
+argparser.add_argument('--plot', action='store_const',
+    const=True, default=False,
+    help='Plot graph of rules')
+argparser.add_argument('--check', action='store_const',
+    const=True, default=False,
+    help='Check rules')
+argparser.add_argument('--check_trials', type=int,
+    default=1000)
+
+argparser.add_argument('ranking', type=str,
+    help='File containing hand rankings')
+argparser.add_argument('hand', type=str, default=None, nargs='?',
+    help='Hand to evaluate')
+
+args = argparser.parse_args()
+
 
 def read_hands(ranking_file):
   handrankings = open(ranking_file)
@@ -175,14 +197,10 @@ def anneal(hands, vals, maxcoeff=50, iterations=10000):
   return best
 
 if __name__ == '__main__':
-  import sys
-
   print "Reading hand rankings..."
-  (hands, vals) = read_hands(sys.argv[1])
+  (hands, vals) = read_hands(args.ranking)
 
-  doanneal = False
-
-  if doanneal:
+  if args.anneal:
     print "Annealing..."
     rules = anneal(hands, vals)
   else:
@@ -201,15 +219,17 @@ if __name__ == '__main__':
 
   print_rules(rules)
 
-  plot_rules(rules, hands, vals)
+  if args.plot:
+    plot_rules(rules, hands, vals)
 
-  print "Checking..."
-  (correct, total, perc) = check(rules, hands, vals)
+  if args.check:
+    print "Checking..."
+    (correct, total, perc) = check(rules, hands, vals)
 
-  print "%d/%d correct (%.02f%%)" % (correct, total, perc)
+    print "%d/%d correct (%.02f%%)" % (correct, total, perc)
 
-  if len(sys.argv) > 2:
-    h = hand.Hand(sys.argv[2])
+  if args.hand:
+    h = hand.Hand(args.hand)
 
     print "Hand score: %d" % eval(rules, h)
 
