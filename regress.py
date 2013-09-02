@@ -3,6 +3,7 @@
 import hand, features
 import numpy as np
 import random
+import pylab
 
 def read_hands(ranking_file):
   handrankings = open(ranking_file)
@@ -64,7 +65,7 @@ def normalize(soln, revnames):
   for i in xrange(len(soln)):
     name = revnames[i]
     x = soln[i]
-    ret[name] = int(x / mincoeff)
+    ret[name] = int(x / mincoeff) - 1
 
   return ret
 
@@ -81,6 +82,16 @@ def print_rules(rules):
     if coeff != 0:
       print "%s: %d" % (name, coeff)
 
+def plot_rules(rules, hands):
+  xs = range(len(hands))
+  ys = [eval(rules, h) for h in reversed(hands)]
+
+  pylab.xlabel("Hand strength")
+  pylab.ylabel("Score")
+
+  pylab.plot(xs, ys, 'x')
+  pylab.show()
+
 def check(rules, hands, numtrials=100000):
   correct = 0
   incorrect = 0
@@ -96,7 +107,7 @@ def check(rules, hands, numtrials=100000):
     score1 = eval(rules, h1)
     score2 = eval(rules, h2)
 
-    if h1 <= h2 and score1 >= score2:
+    if idx1 <= idx2 and score1 >= score2:
       correct += 1
     else:
       incorrect += 1
@@ -175,9 +186,10 @@ if __name__ == '__main__':
 
   print_rules(rules)
 
+  plot_rules(rules, rankings)
+
   print "Checking..."
   (correct, total, perc) = check(rules, rankings)
-
 
   print "%d/%d correct (%.02f%%)" % (correct, total, perc)
 
