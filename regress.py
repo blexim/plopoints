@@ -98,8 +98,9 @@ def check(rules, hands, numtrials=100000):
   total = 0
 
   for i in xrange(numtrials):
-    idx1 = random.randint(0, len(hands) - 1)
-    idx2 = random.randint(0, len(hands) - 1)
+    idxes = random.sample(xrange(len(hands)), 2)
+    idx1 = min(idxes)
+    idx2 = max(idxes)
 
     h1 = hands[idx1]
     h2 = hands[idx2]
@@ -107,7 +108,7 @@ def check(rules, hands, numtrials=100000):
     score1 = eval(rules, h1)
     score2 = eval(rules, h2)
 
-    if idx1 <= idx2 and score1 >= score2:
+    if score1 >= score2:
       correct += 1
     else:
       incorrect += 1
@@ -165,7 +166,7 @@ if __name__ == '__main__':
   print "Reading hand rankings..."
   rankings = read_hands(sys.argv[1])
 
-  doanneal = False
+  doanneal = True
 
   if doanneal:
     print "Annealing..."
