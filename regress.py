@@ -55,28 +55,26 @@ def create_matrix(vectors):
 def solve(A, y):
   return np.linalg.lstsq(A, y)
 
-def print_solution(soln, revnames):
+def normalize(soln):
   maxcoeff = max(abs(x) for x in soln)
-  mincoeff = maxcoeff
+  mincoeff = min(abs(x) for x in soln if abs(x) != 0)
 
+  return [int(x / mincoeff) - 1 for x in soln]
+
+def print_rules(rules, revnames):
   coeffs = []
 
-  for i in xrange(len(soln)):
+  for i in xrange(len(rules)):
     name = revnames[i]
-    coeff = soln[i]
+    coeff = rules[i]
 
-    if True or maxcoeff / abs(coeff) <= 10000000:
+    if coeff != 0:
       coeffs.append((name, coeff))
-
-      if abs(coeff) < mincoeff:
-        mincoeff = abs(coeff)
 
   coeffs.sort()
 
-  for (n, c) in coeffs:
-    x = int(c / mincoeff)
-    print "%s: %d" % (n, x)
-
+  for (name, coeff) in coeffs:
+    print "%s: %d" % (name, coeff)
 
 if __name__ == '__main__':
   import sys
@@ -95,6 +93,8 @@ if __name__ == '__main__':
   print "Solving..."
   solution = solve(A, y)[0]
 
-  print_solution(solution, revnames)
+  rules = normalize(solution)
+  print_rules(rules, revnames)
+
 
   print "Done!"
