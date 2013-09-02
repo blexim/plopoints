@@ -76,18 +76,17 @@ def eval(rules, hand):
 
   return score
 
-
 def print_rules(rules):
   for (name, coeff) in sorted(rules.items()):
     if coeff != 0:
       print "%s: %d" % (name, coeff)
 
-def check(rules, hands):
+def check(rules, hands, numtrials=100000):
   correct = 0
   incorrect = 0
   total = 0
 
-  for i in xrange(100000):
+  for i in xrange(numtrials):
     idx1 = random.randint(0, len(hands) - 1)
     idx2 = random.randint(0, len(hands) - 1)
 
@@ -108,24 +107,72 @@ def check(rules, hands):
 
   return (correct, total, frac*100)
 
+def anneal(hands, maxcoeff=50, iterations=10000):
+  (_, names, revnames) = vectorize(hands)
+  rules = {}
+  temp = maxcoeff*2
+  iternum = 0
+  checktrials = 1000
+
+  for n in names:
+    rules[n] = random.randint(-maxcoeff, maxcoeff)
+
+  bestscore = 0
+  best = rules
+
+  while temp > 0:
+    if iternum % (iterations / temp) == 0:
+      temp = int(temp*0.8)
+      print "Temperature: %d" % temp
+
+    newrules = {}
+
+    for n in names:
+      coeff = rules[n] + random.randint(-temp, temp)
+      coeff = max(coeff, -maxcoeff)
+      coeff = min(coeff, maxcoeff)
+
+      newrules[n] = coeff
+
+    score = check(newrules, hands, checktrials)[0]
+
+    if score > bestscore:
+      print "New best: %d" % score
+      iternum = 0
+
+      bestscore = score
+      best = newrules
+
+    rules = newrules
+    iternum += 1
+
+  return best
+
 if __name__ == '__main__':
   import sys
 
   print "Reading hand rankings..."
   rankings = read_hands(sys.argv[1])
 
-  print "Vectorizing features..."
-  (vects, names, revnames) = vectorize(rankings)
+  doanneal = False
 
-  print "Created %d vectors over %d features" % (len(vects), len(names))
+  if doanneal:
+    print "Annealing..."
+    rules = anneal(rankings)
+  else:
+    print "Vectorizing features..."
+    (vects, names, revnames) = vectorize(rankings)
 
-  print "Creating matrix..."
-  (A, y) = create_matrix(vects)
+    print "Created %d vectors over %d features" % (len(vects), len(names))
 
-  print "Solving..."
-  solution = solve(A, y)[0]
+    print "Creating matrix..."
+    (A, y) = create_matrix(vects)
 
-  rules = normalize(solution, revnames)
+    print "Solving..."
+    solution = solve(A, y)[0]
+
+    rules = normalize(solution, revnames)
+
   print_rules(rules)
 
   print "Checking..."
