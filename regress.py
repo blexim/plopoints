@@ -55,26 +55,31 @@ def create_matrix(vectors):
 def solve(A, y):
   return np.linalg.lstsq(A, y)
 
-def normalize(soln):
+def normalize(soln, revnames):
   maxcoeff = max(abs(x) for x in soln)
   mincoeff = min(abs(x) for x in soln if abs(x) != 0)
+  ret = {}
 
-  return [int(x / mincoeff) - 1 for x in soln]
-
-def print_rules(rules, revnames):
-  coeffs = []
-
-  for i in xrange(len(rules)):
+  for i in xrange(len(soln)):
     name = revnames[i]
-    coeff = rules[i]
+    x = soln[i]
+    ret[name] = int(x / mincoeff) - 1
 
+  return ret
+
+def eval(rules, hand):
+  score = 0
+
+  for feat in features.features(hand):
+    score += rules[feat]
+
+  return score
+
+
+def print_rules(rules):
+  for (name, coeff) in sorted(rules.items()):
     if coeff != 0:
-      coeffs.append((name, coeff))
-
-  coeffs.sort()
-
-  for (name, coeff) in coeffs:
-    print "%s: %d" % (name, coeff)
+      print "%s: %d" % (name, coeff)
 
 if __name__ == '__main__':
   import sys
@@ -93,8 +98,12 @@ if __name__ == '__main__':
   print "Solving..."
   solution = solve(A, y)[0]
 
-  rules = normalize(solution)
-  print_rules(rules, revnames)
+  rules = normalize(solution, revnames)
+  print_rules(rules)
 
+  if len(sys.argv) > 2:
+    h = hand.Hand(sys.argv[2])
+
+    print "Hand score: %d" % eval(rules, h)
 
   print "Done!"
