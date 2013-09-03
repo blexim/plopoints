@@ -6,7 +6,18 @@ def ridx(r):
   return ranks.index(r)
 
 def idxr(idx):
-  return ranks[idx]
+  if idx <= 7:
+    return '0%s' % ranks[idx]
+  elif idx == 8:
+    return '1T'
+  elif idx == 9:
+    return '2J'
+  elif idx == 10:
+    return '3Q'
+  elif idx == 11:
+    return '4K'
+  elif idx == 12:
+    return '5A'
 
 class Hand(object):
   cards = []
