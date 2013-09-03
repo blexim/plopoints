@@ -18,6 +18,9 @@ argparser.add_argument('--check', action='store_const',
     help='Check rules')
 argparser.add_argument('--check_trials', type=int,
     default=1000)
+argparser.add_argument('--coeff_limit', type=float,
+    default=0.1,
+    help='Cutoff for coefficients')
 
 argparser.add_argument('ranking', type=str,
     help='File containing hand rankings')
@@ -90,15 +93,17 @@ def solve(A, y):
 
 def normalize(soln, revnames):
   maxcoeff = max(abs(x) for x in soln)
-  mincoeff = min(abs(x) for x in soln if abs(x) != 0)
+  mincoeff = min(abs(x) for x in soln if abs(x) / maxcoeff >= args.coeff_limit)
   ret = {}
 
   for i in xrange(len(soln)):
     name = revnames[i]
     x = soln[i]
 
-    coeff = int(x / mincoeff)
-    ret[name] = coeff
+    if abs(x) / maxcoeff < args.coeff_limit:
+      ret[name] = 0
+    else:
+      ret[name] = int(x / mincoeff)
 
   return ret
 
