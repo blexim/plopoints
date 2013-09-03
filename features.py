@@ -83,8 +83,9 @@ def connected(h):
       if gap + len(gaps) > 3:
         break
 
-      gaps += range(cnt, cnt + gap)
+      gaps += range(hi - lastrank + 1, hi - r)
       cnt += 1
+      lastrank = r
 
     rundown = (cnt, hi, gaps)
 
@@ -95,9 +96,16 @@ def connected(h):
 
   if cnt >= 2:
     ret.append('rundown_%dcards_%shi' % (cnt, hand.idxr(hi)))
+    #ret.append('rundown_%dcards' % cnt)
+
+    #ret.append('rundown_hi_%s' % hand.idxr(hi))
 
     for g in gaps:
       ret.append('rundown_gap_%d' % g)
+
+    #ret.append('rundown_gaps_%d' % len(gaps))
+
+    #ret.append('rundown_%dcards_%dgaps' % (cnt, len(gaps)))
 
   return ret
 
