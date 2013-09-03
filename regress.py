@@ -96,7 +96,9 @@ def normalize(soln, revnames):
   for i in xrange(len(soln)):
     name = revnames[i]
     x = soln[i]
-    ret[name] = int(x / mincoeff) - 1
+
+    coeff = int(x / mincoeff)
+    ret[name] = coeff
 
   return ret
 
