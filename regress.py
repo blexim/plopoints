@@ -5,6 +5,7 @@ import numpy as np
 import random
 import pylab
 import argparse
+import scipy
 
 argparser = argparse.ArgumentParser(description='Compute PLO rule sets')
 argparser.add_argument('--anneal', action='store_const',
@@ -124,10 +125,16 @@ def plot_rules(rules, hands, vals):
   xs = vals
   ys = [eval(rules, h) for h in hands]
 
+  (ar, br) = scipy.polyfit(xs, ys, 1)
+  xr = scipy.polyval([ar, br], xs)
+
+  print "Regression: %fx + %f" % (ar, br)
+
   pylab.xlabel("Hand strength")
   pylab.ylabel("Score")
 
   pylab.plot(xs, ys, 'x')
+  pylab.plot(xs, xr, 'r.-')
   pylab.show()
 
 def check(rules, hands, vals, numtrials=100000):
